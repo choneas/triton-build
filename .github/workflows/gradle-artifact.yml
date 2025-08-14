@@ -2,23 +2,6 @@ name: Gradle build and upload artifacts
 
 on:
   push:
-    paths:
-      - '**/*.gradle'
-      - '**/*.gradle.kts'
-      - 'gradle/**'
-      - 'settings.gradle*'
-      - 'build.gradle*'
-      - 'src/**'
-      - '.github/workflows/gradle-artifact.yml'
-  pull_request:
-    paths:
-      - '**/*.gradle'
-      - '**/*.gradle.kts'
-      - 'gradle/**'
-      - 'settings.gradle*'
-      - 'build.gradle*'
-      - 'src/**'
-      - '.github/workflows/gradle-artifact.yml'
   workflow_dispatch: {}
 
 jobs:
@@ -40,26 +23,13 @@ jobs:
       - name: Grant execute permission for Gradle
         run: chmod +x ./gradlew
 
-      - name: Run Gradle build
-        run: ./gradlew build
-
-      - name: List built artifacts
-        if: always()
-        run: |
-          echo "Artifacts under build/libs:"
-          find . -type f -path "*/build/libs/*.jar" -print | sort || true
-          echo "Distributions under build/distributions:"
-          find . -type f -path "*/build/distributions/*" -print | sort || true
+      - name: Run shadowJar
+        run: ./gradlew shadowJar
 
       - name: Upload build artifacts
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts-${{ github.ref_name }}-${{ github.run_number }}
-          path: |
-            **/build/libs/*.jar
-            **/build/distributions/*
-            !**/*-sources.jar
-            !**/*-javadoc.jar
+          name: Triton-${{ github.ref_name }}-${{ github.run_number }}
+          path: build/libs/Triton-*-all.jar
           if-no-files-found: error
           retention-days: 14
